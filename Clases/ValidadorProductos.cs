@@ -73,45 +73,48 @@ namespace Clases
 
 
         // Validación de código del producto
-        public static string IngresarValidarRetornarCodigoDeProducto(Dictionary<short, Stack<Producto>> maquinaExpendedora)
+        public static string IngresarValidarRetornarCodigoDeProducto(Dictionary<short, Stack<Producto>> maquinaExpendedora, short j)
         {
             string patron = @"^[A-Z]{2}[0-9]{3}$";
             do
             {
-                bool codigoExiste = false;
-                Console.Write("Ingresá el código del producto: ");
+                Console.Write($"Ingresá el código del producto {j}: ");
                 string codigoString = Console.ReadLine();
                 if (string.IsNullOrEmpty(codigoString))
                 {
                     Console.WriteLine("El código no puede ser un valor vacío");
-                    continue;
                 }
-                else if(Regex.IsMatch(codigoString, patron))
+                else if (Regex.IsMatch(codigoString, patron))
                 {
-                    //if(maquinaExpendedora.Any(kv => kv.Value.Any(producto => producto.CodigoDeProducto == codigoString))
-                    foreach(Stack<Producto> stack in maquinaExpendedora.Values)
-                    {
-                        foreach(Producto p in stack)
-                            {
-                                if(p.CodigoDeProducto == codigoString)
-                                {
-                                    Console.WriteLine("El código ingresado ya existe");
-                                    codigoExiste = true;
-                                    break;
-                                }
-                            }
-                    }
+                    return codigoString;
                 }
                 else
                 {
                     Console.WriteLine("Formato de código incorrecto");
-                    continue;
-                }
-                if (!codigoExiste)
-                {
-                    return codigoString;
                 }
             } while (true);
+        }
+
+
+        public static short IgresarRetornarCantidadDeUnProducto(string nombre)
+        {
+            Console.WriteLine($"Cuántos productos {nombre} se cargarán (máx. 10 unidades)?");
+            while (true)
+            {
+                string cantidadString = Console.ReadLine();
+                if (string.IsNullOrEmpty(cantidadString))
+                {
+                    Console.WriteLine("La entrada no puede ser vacía. Debes ingresar un entero entre 1 y 10");
+                }
+                else if (short.TryParse(cantidadString, out short cantidadDeUnProducto) && cantidadDeUnProducto >=1 && cantidadDeUnProducto <= 10)
+                {
+                    return cantidadDeUnProducto;
+                }
+                else
+                {
+                    Console.WriteLine("Respuesta incorrecta. Debes ingresar un entero entre 1 y 10");
+                }
+            }
         }
     }
 }

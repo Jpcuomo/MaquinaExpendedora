@@ -6,7 +6,7 @@ namespace Consola
     {
         static void Main(string[] args)
         {
-            const int cantidadProductos = 3;
+            const int cantidadProductos = 2;
             short posicion;
             Dictionary<short, Stack<Producto>> maquinaExpendedora = new Dictionary<short, Stack<Producto>>();
 
@@ -19,80 +19,103 @@ namespace Consola
                 bool continuar = false;
                 posicion = SeleccionarProductoPorPosicion(cantidadProductos);
                 Console.WriteLine($"Código elegido: {posicion}");
-                RecibirProductoSeleccionado(posicion, ref maquinaExpendedora);
-                MostrarProductos(maquinaExpendedora);
-                do
+                if (RecibirProductoSeleccionado(posicion, maquinaExpendedora))
                 {
-                    Console.WriteLine("Desea retirar otro producto (s/n)?: ");
-                    string respuesta = Console.ReadLine();
-                    if ( respuesta.ToLower() == "n")
+                    MostrarProductos(maquinaExpendedora);
+
+                    do
                     {
-                        Console.WriteLine("Gracias por usar nuestro servicio. Vuelva prontos!");
+                        if (maquinaExpendedora.Any(kv => kv.Value.Count() != 0))
+                        {
+                            Console.Write("Desea retirar otro producto (s/n)?: ");
+                            string respuesta = Console.ReadLine();
+                            if (respuesta.ToLower() == "n")
+                            {
+                                Console.WriteLine("Gracias por usar nuestro servicio. Vuelva prontos!");
+                                break;
+                            }
+                            else if (respuesta.ToLower() == "s")
+                            {
+                                continuar = true;
+                                break;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Respuesta incorrecta");
+                            }
+                        }
+                        else
+                        {
+                            continuar = false;
+                            break;
+                        }
+                    } while (true);
+
+                    if (!continuar)
+                    {
+                        Console.WriteLine("La expendedora está vacía");
                         break;
                     }
-                    else if (respuesta.ToLower() == "s")
+                }
+            } while (true);
+        }
+
+
+        //VER//
+        public static Dictionary<short, Stack<Producto>> PoblarRetornarExpendedora(Dictionary<short, Stack<Producto>> maquinaExpendedora, short cantidadProductos)
+        {
+            Console.WriteLine($"Ingresa {cantidadProductos} productos con su precio y código");
+            for (short i = 1; i < cantidadProductos + 1; i++)
+            {
+                Stack<Producto> pilaProducto = new Stack<Producto>();
+                string nombre = ValidadorProductos.IngresarValidarRetornarProducto(i); 
+                decimal precio = ValidadorProductos.IngresarValidarRetornarPrecio();
+                short cantidadDeUnProducto = ValidadorProductos.IgresarRetornarCantidadDeUnProducto(nombre);
+
+
+                for (short j = 1; j <= cantidadDeUnProducto; j++)
+                {
+                    string codigoProducto = ValidadorProductos.IngresarValidarRetornarCodigoDeProducto(maquinaExpendedora, j);
+                    bool codigoExiste = maquinaExpendedora.Any(kv => kv.Value.Any(p => p.CodigoDeProducto == codigoProducto));
+
+                    if (codigoExiste)
                     {
-                        continuar = true;
-                        break;
+                        Console.WriteLine("El código ingresado ya existe");
+                        j--;
                     }
                     else
                     {
-                        Console.WriteLine("Respuesta incorrecta");
+                        Producto producto = new Producto(nombre, precio, codigoProducto);
+                        pilaProducto.Push(producto);
                     }
-
-                } while (true);
-
-                if (!continuar)
-                {
-                    break;
-                }
-
-            if (maquinaExpendedora.Count() == 0)
-            {
-                Console.WriteLine("La expendedora está vacía");
-                break;
+                    maquinaExpendedora[i] = pilaProducto;
+                }                
             }
-            } while (maquinaExpendedora.Count() < cantidadProductos);
+            Console.WriteLine($"Se cargaron los {cantidadProductos} productos con éxito");
+            return maquinaExpendedora;
         }
-
-
-        public static Producto CrearObjetoProducto(short posicion, Dictionary<short, Stack<Producto>> maquinaExpendedora)
-        {
-            // Inicializo atributos de producto
-            string nombre = ValidadorProductos.IngresarValidarRetornarProducto(posicion);
-            decimal precio = ValidadorProductos.IngresarValidarRetornarPrecio();
-            string codigoProducto = ValidadorProductos.IngresarValidarRetornarCodigoDeProducto(maquinaExpendedora);
-                
-            // Creo instancia de Producto
-            return new Producto(nombre, precio, codigoProducto);
-        }
-
-        //VER//
-        //public static Dictionary<short, Stack<Producto>> PoblarRetornarExpendedora(Dictionary<short, Stack<Producto>> maquinaExpendedora, short cantidadProductos)
-        //{
-        //    Console.WriteLine($"Ingresa {cantidadProductos} productos con su precio y código");
-        //    for (short i = 1; i < cantidadProductos + 1; i++)
-        //    {
-
-
-        //        Stack<Producto> pilaProducto = new Stack<Producto>();
-        //        pilaProducto.Push(producto);
-        //        maquinaExpendedora[i] = pilaProducto;
-        //        //break;
-        //    }
-        //    Console.WriteLine($"Se cargaron los {cantidadProductos} productos con éxito");
-        //    return maquinaExpendedora;
-        //}
 
 
         static void MostrarProductos(Dictionary<short, Stack<Producto>> maquinaExpendedora)
-        {
+        { 
+            HashSet<string> productosImpresos = new HashSet<string>();
+
             foreach(var kvp in maquinaExpendedora)
             {
-                foreach(Producto producto in kvp.Value)
+                short cantidadDeUnProducto = 0;
+                foreach (Producto producto in kvp.Value)
                 {
-                    Console.WriteLine($"- Posición {kvp.Key}: {producto.Nombre} - $ {producto.Precio} - Código: {producto.CodigoDeProducto}");
+                    cantidadDeUnProducto = (short)kvp.Value.Count();
+                    string mensaje = $"- Posición {kvp.Key}: {producto.Nombre} - $ {producto.Precio} - Cantidad de {producto.Nombre}s: {cantidadDeUnProducto}";
+                    if (!productosImpresos.Contains(mensaje))
+                    {
+                        productosImpresos.Add( mensaje );
+                    }
                 }
+            }
+            foreach(string mensaje in productosImpresos)
+            {
+                Console.WriteLine(mensaje);
             }
         }
 
@@ -119,18 +142,25 @@ namespace Consola
         }
 
 
-        static bool RecibirProductoSeleccionado(short posicion, ref Dictionary<short, Stack<Producto>> expendedora)
+        static bool RecibirProductoSeleccionado(short posicion, Dictionary<short, Stack<Producto>> expendedora)
         {
-            foreach (Stack<Producto> stack in expendedora.Values)
+            if (expendedora.ContainsKey(posicion))
             {
-                foreach (Producto producto in stack)
+                try
                 {
-                    Console.WriteLine($"Recibiste el producto n°{posicion} - {producto.Nombre} - Precio $ {producto.Precio}");
-                    expendedora.Remove(posicion);
+                    Producto producto = expendedora[posicion].Pop();
+                    Console.WriteLine(
+                        $"Recibiste el producto n°{posicion} " +
+                        $"- {producto.Nombre} " +
+                        $"- Precio $ {producto.Precio} " +
+                        $"- Código: {producto.CodigoDeProducto}");
                     return true;
                 }
-            }
-            Console.WriteLine($"El producto {posicion} no está disponible");
+                catch (InvalidOperationException)
+                {
+                    Console.WriteLine($"El producto {posicion} no está disponible");
+                }
+            }     
             return false;
         }  
     }
