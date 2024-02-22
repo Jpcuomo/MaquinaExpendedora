@@ -10,14 +10,18 @@ namespace Clases
     {
         public string Nombre { get; }
         public decimal Precio { get; }
-        public string CodigoDeProducto { get; set; }
+        public string CodigoDeProducto { get; }
 
 
-        public Producto(string nombre, decimal precio, string codigoDeProducto)
+        private Producto(string codigoDeProducto)
+        {
+            CodigoDeProducto = codigoDeProducto;
+        }
+
+        public Producto(string nombre, decimal precio, string codigoDeProducto) : this(codigoDeProducto)
         {
             Nombre = nombre;
             Precio = precio;
-            CodigoDeProducto = codigoDeProducto;
         }
     }
 }
